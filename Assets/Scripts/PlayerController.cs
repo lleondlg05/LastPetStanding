@@ -9,6 +9,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float speed;
     [SerializeField] private float speedRotation;
     [SerializeField] private Transform player;
+    [SerializeField] private float turnSmoothTime = 0.1f;
+    private float turnSmoothVelocity;
+    [SerializeField] private Transform cam;
 
     //Jump parameters
     [SerializeField] private Transform groundCheck;
@@ -22,8 +25,6 @@ public class PlayerController : MonoBehaviour
     //Camera Parameters
     public float xSensivity = 100;
     public float ySensivity = 100;
-    public GameObject followTransform;
-    private Vector3 angles;
 
     void Awake()
     {
@@ -42,14 +43,17 @@ public class PlayerController : MonoBehaviour
     {
         float hInput = Input.GetAxis("Horizontal");
         float vInput = Input.GetAxis("Vertical");
+        Vector3 direction = new Vector3(hInput, 0, vInput).normalized;
 
-        Vector3 moveDirection = hInput * followTransform.transform.right + vInput * followTransform.transform.forward;
+        if(direction.magnitude > 0.1f)
+        {
+            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
+            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+            transform.rotation = Quaternion.Euler(0, angle, 0);
 
-        controller.Move(moveDirection * Time.deltaTime * speed);
-
-        //relocate player
-        if(moveDirection != Vector3.zero)
-            player.transform.rotation = Quaternion.Euler(0, followTransform.transform.rotation.eulerAngles.y, 0);
+            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+            controller.Move(moveDir.normalized * speed * Time.deltaTime);
+        }
     }
 
     void JumpController()
@@ -69,26 +73,6 @@ public class PlayerController : MonoBehaviour
 
     void CameraController()
     {
-        float x = Input.GetAxis("Mouse X") * xSensivity * Time.deltaTime;
-
-        followTransform.transform.rotation *= Quaternion.AngleAxis(x, Vector2.up);
-
-        float y = Input.GetAxis("Mouse Y") * ySensivity * Time.deltaTime;
-
-        followTransform.transform.rotation *= Quaternion.AngleAxis(-y, Vector2.right);
-
-        angles = followTransform.transform.localEulerAngles;
-        angles.z = 0;
-
-        var angle = followTransform.transform.localEulerAngles.x;
-
-        //Clamp the up/down rotation
-
-        if (angle > 180 && angle < 340)
-            angles.x = 340;
-        else if (angle < 180 && angle > 40)
-            angles.x = 40;
-
-        followTransform.transform.localEulerAngles = angles;
+        
     }
 }
