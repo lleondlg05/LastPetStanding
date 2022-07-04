@@ -21,12 +21,11 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private float groundDistance = 0.2f;
     private Vector3 velocity;
+    private int jumpCount = 0;
 
     //Camera Parameters
     [SerializeField] private GameObject followTransform;
-    public float xSensivity = 100;
-    public float ySensivity = 100;
-
+    
     void Awake()
     {
         controller = GetComponent<CharacterController>();
@@ -63,12 +62,20 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown("Jump") && isGrounded)
             velocity.y = Mathf.Sqrt(jumpForce * -2 * gravity);
 
-        if(isGrounded && velocity.y < 0)
+        if (Input.GetButtonDown("Jump") && !isGrounded && jumpCount == 0)
+        {
+            velocity.y = Mathf.Sqrt(jumpForce * -2 * gravity);
+            jumpCount++;
+        }
+
+        if (isGrounded && velocity.y < 0)
+        {
             velocity.y = -2;
+            jumpCount = 0;
+        }
 
         velocity.y += gravity * Time.deltaTime;
 
         controller.Move(velocity * Time.deltaTime);
     }
-
 }
