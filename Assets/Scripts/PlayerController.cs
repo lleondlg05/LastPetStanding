@@ -23,6 +23,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 velocity;
 
     //Camera Parameters
+    [SerializeField] private GameObject followTransform;
     public float xSensivity = 100;
     public float ySensivity = 100;
 
@@ -34,7 +35,6 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        CameraController();
         WalkController();
         JumpController();
     }
@@ -71,8 +71,4 @@ public class PlayerController : MonoBehaviour
         controller.Move(velocity * Time.deltaTime);
     }
 
-    void CameraController()
-    {
-        
-    }
 }
