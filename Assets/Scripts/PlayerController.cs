@@ -22,6 +22,7 @@ public class PlayerController : MonoBehaviour
     private float groundDistance = 0.2f;
     private Vector3 velocity;
     private int jumpCount = 0;
+    private float originalStepOffset;
 
     //Camera Parameters
     [SerializeField] private GameObject followTransform;
@@ -30,6 +31,7 @@ public class PlayerController : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         Cursor.lockState = CursorLockMode.Locked;
+        originalStepOffset = controller.stepOffset;
     }
 
     void Update()
@@ -60,13 +62,20 @@ public class PlayerController : MonoBehaviour
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 
         if (Input.GetButtonDown("Jump") && isGrounded)
+        {
             velocity.y = Mathf.Sqrt(jumpForce * -2 * gravity);
+            controller.stepOffset = originalStepOffset;
+        }
 
         if (Input.GetButtonDown("Jump") && !isGrounded && jumpCount == 0)
         {
             velocity.y = Mathf.Sqrt(jumpForce * -2 * gravity);
+            controller.stepOffset = originalStepOffset;
             jumpCount++;
         }
+
+        if (!isGrounded)
+            controller.stepOffset = 0;
 
         if (isGrounded && velocity.y < 0)
         {
